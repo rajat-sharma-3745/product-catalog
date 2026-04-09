@@ -11,13 +11,17 @@ export class ApiError extends Error {
 
 export async function request(path, options = {}) {
   const url = `${baseURL.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
-  return fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
+  try {
+    return await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+  } catch {
+    throw new ApiError('Unable to reach server. Check your connection and try again.', 0, null);
+  }
 }
 
 async function parseResponseBody(response) {

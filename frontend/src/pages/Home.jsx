@@ -1,29 +1,36 @@
-import { NavLink } from 'react-router-dom';
+import AppShell from '../components/AppShell.jsx';
 
 export default function Home() {
   return (
-    <div className="min-h-screen max-w-lg mx-auto px-4 py-6">
-      <header className="flex gap-6 mb-8 border-b border-neutral-200 pb-4">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            isActive ? 'font-semibold text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
-          }
-          end
-        >
-          Home
-        </NavLink>
-        <NavLink
-          to="/catalog"
-          className={({ isActive }) =>
-            isActive ? 'font-semibold text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
-          }
-        >
-          Catalog
-        </NavLink>
-      </header>
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Product catalog</h1>
-      <p className="mt-3 text-neutral-600">Scan and purchase flow</p>
-    </div>
+    <AppShell title="Product catalog" subtitle="Scan and purchase flow">
+      <section className="rounded-xl border border-dashed border-neutral-300 bg-white p-4">
+        <h2 className="text-sm font-medium text-neutral-800">Viewfinder area</h2>
+        <div className="mt-3 h-44 rounded-lg bg-neutral-100" />
+      </section>
+
+      <button
+        type="button"
+        className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800"
+      >
+        Start scan
+      </button>
+
+      <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <p className="text-sm font-medium text-neutral-800">Manual entry</p>
+        <div className="mt-3 flex gap-2">
+          <input
+            type="text"
+            placeholder="Enter barcode"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"
+          />
+          <button
+            type="button"
+            className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100"
+          >
+            Lookup
+          </button>
+        </div>
+      </div>
+    </AppShell>
   );
 }

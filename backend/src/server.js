@@ -4,13 +4,14 @@ import { connectDb } from './config/db.js';
 const PORT = process.env.PORT || 3000;
 
 async function start() {
-  await connectDb();
-  app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
+   connectDb().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server listening on http://localhost:${PORT}`);
+    });
+  }).catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
 }
 
-start().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+start();

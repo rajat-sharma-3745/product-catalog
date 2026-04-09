@@ -72,11 +72,16 @@ function formatPrice(currency, amount) {
     return 'Price unavailable';
   }
 
-  if (!currency) {
+  const currencyUpper = String(currency || '').toUpperCase();
+  if (currencyUpper === 'INR') {
+    return `₹${amount}`;
+  }
+
+  if (!currencyUpper) {
     return String(amount);
   }
 
-  return `${currency} ${amount}`;
+  return `${currencyUpper} ${amount}`;
 }
 
 export default function Catalog() {
@@ -148,11 +153,11 @@ export default function Catalog() {
           <ul className="space-y-3">
             {catalogItems.map((item) => (
               <li key={item.id} className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-                <p className="text-sm font-semibold text-neutral-900">{item.name}</p>
-                <p className="mt-1 text-sm text-neutral-700">{formatPrice(item.currency, item.price)}</p>
-                <p className="mt-1 text-xs text-neutral-600">{formatDate(item.purchasedAt)}</p>
+                <p className="text-base font-semibold text-neutral-900">{item.name}</p>
+                <p className="mt-1 text-sm font-medium text-neutral-800">{formatPrice(item.currency, item.price)}</p>
+                <p className="mt-1 text-xs text-neutral-500">{formatDate(item.purchasedAt)}</p>
                 {item.transactionRef ? (
-                  <p className="mt-1 text-xs text-neutral-600">
+                  <p className="mt-1 text-xs text-neutral-500">
                     Ref: {item.transactionRef.slice(Math.max(0, item.transactionRef.length - 6))}
                   </p>
                 ) : null}

@@ -15,6 +15,19 @@ function isLikelyMobileDevice() {
   return /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+function formatProductPrice(currency, amount) {
+  if (typeof amount !== 'number' || Number.isNaN(amount)) {
+    return 'Price unavailable';
+  }
+
+  const currencyUpper = String(currency || '').toUpperCase();
+  if (currencyUpper === 'INR') {
+    return `₹${amount}`;
+  }
+
+  return currencyUpper ? `${currencyUpper} ${amount}` : String(amount);
+}
+
 export default function Home() {
   const [manualCode, setManualCode] = useState('');
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -201,11 +214,7 @@ export default function Home() {
         >
           Start camera scan
         </button>
-      ) : (
-        <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-3 text-xs text-neutral-600">
-          Camera scan is optimized for mobile devices. On desktop, use image upload or manual entry.
-        </div>
-      )}
+      ) : null}
 
       <div className="rounded-xl border border-neutral-200 bg-white p-4">
         <p id="manual-entry-title" className="text-sm font-medium text-neutral-800">
@@ -229,7 +238,7 @@ export default function Home() {
             onClick={handleManualLookup}
             className="w-full cursor-pointer rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            {isLookingUp ? 'Looking up...' : 'Lookup'}
+            {isLookingUp ? 'Looking...' : 'Lookup'}
           </button>
         </div>
         {scanError ? (
@@ -242,9 +251,17 @@ export default function Home() {
       {selectedProduct ? (
         <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
           <h3 className="text-sm font-semibold text-emerald-900">Product found</h3>
+          {selectedProduct.imageUrl ? (
+            <img
+              src={selectedProduct.imageUrl}
+              alt={`${selectedProduct.name} product`}
+              className="mt-3 h-36 w-full rounded-lg border border-emerald-200 bg-white object-cover"
+              loading="lazy"
+            />
+          ) : null}
           <p className="mt-2 text-sm text-emerald-900">{selectedProduct.name}</p>
           <p className="mt-1 text-xs text-emerald-800">
-            Barcode: {selectedProduct.barcode} | Price: {selectedProduct.currency} {selectedProduct.price}
+            Barcode: {selectedProduct.barcode} | Price: {formatProductPrice(selectedProduct.currency, selectedProduct.price)}
           </p>
           <p className="mt-1 text-xs text-emerald-800">
             {hasStock ? 'In stock' : 'Out of stock'}

@@ -1,8 +1,11 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import AppShell from '../components/AppShell.jsx';
 import ScanModal from '../components/ScanModal.jsx';
 import { useScanState } from '../hooks/useScan.js';
+import { addToCatalog, createPayment } from '../api/index.js';
+import { ApiError } from '../api/client.js';
 
 function isLikelyMobileDevice() {
   if (typeof navigator === 'undefined') {
@@ -16,17 +19,42 @@ export default function Home() {
   const [manualCode, setManualCode] = useState('');
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isFileDecoding, setIsFileDecoding] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [isAddingToCatalog, setIsAddingToCatalog] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [paymentError, setPaymentError] = useState('');
+  const [catalogSuccessMessage, setCatalogSuccessMessage] = useState('');
   const fileInputRef = useRef(null);
   const isMobile = useMemo(() => isLikelyMobileDevice(), []);
 
-  const { selectedProduct, isLookingUp, scanError, setScanError, lookupCode } = useScanState();
+  const {
+    selectedProduct,
+    isLookingUp,
+    scanError,
+    setScanError,
+    lookupCode,
+    lastPayment,
+    setLastPayment,
+    clearLastPayment,
+    markCatalogDirty,
+  } = useScanState();
 
-  const isBusy = isLookingUp || isFileDecoding;
+  const isBusy = isLookingUp || isFileDecoding || isPaying || isAddingToCatalog;
+
+  const resetPaymentUiState = () => {
+    setPaymentError('');
+    setCatalogSuccessMessage('');
+  };
+
+  const handleLookup = async (rawCode) => {
+    resetPaymentUiState();
+    clearLastPayment();
+    return lookupCode(rawCode);
+  };
 
   const handleManualLookup = async () => {
     setUploadError('');
-    await lookupCode(manualCode);
+    await handleLookup(manualCode);
   };
 
   const handleUploadDecode = async (event) => {
@@ -44,13 +72,14 @@ export default function Home() {
     const scanner = new Html5Qrcode('file-qr-reader');
     try {
       const decodedText = await scanner.scanFile(file, true);
-      await lookupCode(decodedText);
+      await handleLookup(decodedText);
     } catch {
       setUploadError('Could not decode barcode from this image. Try another image or use manual entry.');
     } finally {
       try {
         await scanner.clear();
       } catch {
+        // Ignore scanner clear errors after file decode attempts.
       }
       setIsFileDecoding(false);
     }
@@ -59,8 +88,73 @@ export default function Home() {
   const handleCameraDetected = async (decodedText) => {
     setIsScanModalOpen(false);
     setUploadError('');
-    await lookupCode(decodedText);
+    await handleLookup(decodedText);
   };
+
+  useEffect(() => {
+    resetPaymentUiState();
+  }, [selectedProduct?._id]);
+
+  const resolvePaymentId = (paymentResponse) =>
+    paymentResponse?.paymentId ??
+    paymentResponse?.payment?._id ??
+    paymentResponse?.payment?.id ??
+    paymentResponse?._id ??
+    null;
+
+  const resolveTransactionRef = (paymentResponse) =>
+    paymentResponse?.transactionRef ?? paymentResponse?.payment?.transactionRef ?? '';
+
+  const handlePayment = async () => {
+    if (!selectedProduct || isBusy) {
+      return;
+    }
+
+    resetPaymentUiState();
+    setIsPaying(true);
+
+    try {
+      const paymentResponse = await createPayment(selectedProduct._id, selectedProduct.price);
+      const transactionRef = resolveTransactionRef(paymentResponse);
+      const paymentId = resolvePaymentId(paymentResponse);
+      const paymentStatus = paymentResponse?.status ?? paymentResponse?.payment?.status ?? 'success';
+
+      setLastPayment({
+        ...paymentResponse,
+        transactionRef,
+        paymentId,
+        status: paymentStatus,
+        productId: selectedProduct._id,
+      });
+
+      if (paymentStatus !== 'success') {
+        throw new Error('Payment failed. Please try again.');
+      }
+
+      if (!paymentId) {
+        throw new Error('Payment completed but payment id was missing from response.');
+      }
+
+      setIsAddingToCatalog(true);
+      await addToCatalog(selectedProduct._id, paymentId);
+      markCatalogDirty();
+      setCatalogSuccessMessage('Added to catalog.');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setPaymentError(error.message || 'Payment failed. Please try again.');
+      } else {
+        setPaymentError(error instanceof Error ? error.message : 'Payment failed. Please try again.');
+      }
+    } finally {
+      setIsPaying(false);
+      setIsAddingToCatalog(false);
+    }
+  };
+
+  const hasStock =
+    typeof selectedProduct?.inStock === 'number'
+      ? selectedProduct.inStock > 0
+      : selectedProduct?.inStock !== false;
 
   return (
     <AppShell title="Product catalog" subtitle="Scan and purchase flow">
@@ -140,6 +234,42 @@ export default function Home() {
           <p className="mt-1 text-xs text-emerald-800">
             Barcode: {selectedProduct.barcode} | Price: {selectedProduct.currency} {selectedProduct.price}
           </p>
+          <p className="mt-1 text-xs text-emerald-800">
+            {hasStock ? 'In stock' : 'Out of stock'}
+          </p>
+
+          <button
+            type="button"
+            onClick={handlePayment}
+            disabled={isBusy || !hasStock}
+            className="mt-4 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isPaying ? 'Processing payment...' : isAddingToCatalog ? 'Adding to catalog...' : 'Pay now'}
+          </button>
+
+          {lastPayment?.transactionRef ? (
+            <p className="mt-3 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-900">
+              Payment successful. Transaction reference: {lastPayment.transactionRef}
+            </p>
+          ) : null}
+
+          {paymentError ? (
+            <p className="mt-3 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-900">
+              {paymentError}
+            </p>
+          ) : null}
+
+          {catalogSuccessMessage ? (
+            <div className="mt-3 space-y-2 rounded-lg border border-emerald-300 bg-white px-3 py-3 text-sm text-emerald-900">
+              <p>{catalogSuccessMessage}</p>
+              <Link
+                to="/catalog"
+                className="inline-flex rounded-lg border border-emerald-500 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+              >
+                Go to Catalog
+              </Link>
+            </div>
+          ) : null}
         </section>
       ) : null}
 

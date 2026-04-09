@@ -35,6 +35,7 @@ export function useScanState() {
     lastPayment,
     setLastPayment,
     clearLastPayment,
+    markCatalogDirty,
   } = useAppState();
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [scanError, setScanError] = useState('');
@@ -57,6 +58,7 @@ export function useScanState() {
       lookupInFlightRef.current = true;
       setIsLookingUp(true);
       setScanError('');
+      clearLastPayment();
 
       try {
         const response = await scanCode(normalizedCode);
@@ -66,13 +68,14 @@ export function useScanState() {
       } catch (error) {
         setScanError(getScanErrorMessage(error));
         clearSelectedProduct();
+        clearLastPayment();
         return null;
       } finally {
         lookupInFlightRef.current = false;
         setIsLookingUp(false);
       }
     },
-    [clearSelectedProduct, setSelectedProduct]
+    [clearLastPayment, clearSelectedProduct, setSelectedProduct]
   );
 
   return {
@@ -82,6 +85,7 @@ export function useScanState() {
     lastPayment,
     setLastPayment,
     clearLastPayment,
+    markCatalogDirty,
     isLookingUp,
     scanError,
     setScanError,

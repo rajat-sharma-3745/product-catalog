@@ -1,19 +1,5 @@
 #!/usr/bin/env node
 
-/*
-Demo barcodes (exact strings from .cursor/DECISIONS.md):
-8901234567890
-8901234567891
-8901234567892
-8901234567893
-8901234567894
-8901234567895
-8901234567896
-8901234567897
-8901234567898
-8901234567899
-*/
-
 import mongoose from 'mongoose';
 import { connectDb } from '../src/config/db.js';
 import Product from '../src/models/Product.js';

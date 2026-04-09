@@ -53,6 +53,7 @@ export default function Home() {
   } = useScanState();
 
   const isBusy = isLookingUp || isFileDecoding || isPaying || isAddingToCatalog;
+  const isManualLookupLoading = isLookingUp && !isFileDecoding;
 
   const resetPaymentUiState = () => {
     setPaymentError('');
@@ -238,7 +239,7 @@ export default function Home() {
             onClick={handleManualLookup}
             className="w-full cursor-pointer rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
-            {isLookingUp ? 'Looking...' : 'Lookup'}
+            {isManualLookupLoading ? 'Looking...' : 'Lookup'}
           </button>
         </div>
         {scanError ? (

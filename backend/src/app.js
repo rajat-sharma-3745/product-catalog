@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import apiRoutes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { ensureDbConnection } from './config/db.js';
 
 const app = express();
 
@@ -17,8 +18,8 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({ ok: true });
-})
-app.use('/api', apiRoutes);
+});
+app.use('/api', ensureDbConnection, apiRoutes);
 
 app.use(errorHandler);
 

@@ -1,16 +1,25 @@
-# React + Vite
+# Product Catalog Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Environment
 
-Currently, two official plugins are available:
+Create a `.env` file in `frontend/`:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+VITE_API_URL=http://localhost:3000
+```
 
-## React Compiler
+For deployed environments, set `VITE_API_URL` to your backend HTTPS URL.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Build
 
-## Expanding the ESLint configuration
+Build production assets:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run build
+```
+
+## Camera and Deployment Notes
+
+- Mobile browsers typically require **HTTPS** for camera access.
+- If camera scanning is unavailable (permissions/device/HTTP), users can still use image upload and manual barcode entry.
+- Backend CORS must allow the deployed frontend origin (`CLIENT_URL` in backend environment).

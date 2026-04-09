@@ -11,6 +11,10 @@ export function normalizeCode(value) {
   return String(value).trim().replace(/[\s-]+/g, '');
 }
 
+function isSupportedBarcode(code) {
+  return /^\d{8,14}$/.test(code);
+}
+
 function getScanErrorMessage(error) {
   if (error instanceof ApiError) {
     if (error.status === 404) {
@@ -47,6 +51,12 @@ export function useScanState() {
 
       if (!normalizedCode) {
         setScanError('Enter a barcode to continue.');
+        clearSelectedProduct();
+        return null;
+      }
+
+      if (!isSupportedBarcode(normalizedCode)) {
+        setScanError('Enter a valid barcode (8-14 digits).');
         clearSelectedProduct();
         return null;
       }

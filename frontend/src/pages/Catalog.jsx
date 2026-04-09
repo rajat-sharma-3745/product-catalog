@@ -83,6 +83,7 @@ export default function Catalog() {
   const { catalogRefresh } = useAppState();
   const [catalogItems, setCatalogItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const loadCatalog = useCallback(async () => {
@@ -115,10 +116,18 @@ export default function Catalog() {
             <p className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-900">{errorMessage}</p>
             <button
               type="button"
-              onClick={() => void loadCatalog()}
-              className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100"
+              onClick={async () => {
+                setIsRetrying(true);
+                try {
+                  await loadCatalog();
+                } finally {
+                  setIsRetrying(false);
+                }
+              }}
+              disabled={isRetrying}
+              className="cursor-pointer rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Retry
+              {isRetrying ? 'Retrying...' : 'Retry'}
             </button>
           </div>
         ) : null}
@@ -128,7 +137,7 @@ export default function Catalog() {
             <p className="text-sm text-neutral-600">No purchases yet.</p>
             <Link
               to="/"
-              className="inline-flex rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition hover:bg-neutral-100"
+              className="inline-flex cursor-pointer rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1"
             >
               Back to scan
             </Link>

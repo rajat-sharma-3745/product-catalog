@@ -16,6 +16,7 @@ export default function ScanModal({ isOpen, onClose, onDetected, isBusy = false 
   const scannerRef = useRef(null);
   const hasDetectedRef = useRef(false);
   const [cameraError, setCameraError] = useState('');
+  const titleId = 'scan-modal-title';
 
   const stopScanner = useCallback(async () => {
     const scanner = scannerRef.current;
@@ -41,18 +42,17 @@ export default function ScanModal({ isOpen, onClose, onDetected, isBusy = false 
   useEffect(() => {
     if (!isOpen) {
       hasDetectedRef.current = false;
-      setCameraError('');
       void stopScanner();
       return undefined;
     }
 
     hasDetectedRef.current = false;
-    setCameraError('');
 
     const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
     scannerRef.current = scanner;
 
     const startScanner = async () => {
+      setCameraError('');
       try {
         await scanner.start(
           { facingMode: 'environment' },
@@ -80,25 +80,47 @@ export default function ScanModal({ isOpen, onClose, onDetected, isBusy = false 
     };
   }, [isOpen, isBusy, onDetected, stopScanner]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-4 sm:items-center">
-      <div className="w-full max-w-md rounded-2xl bg-white p-4 shadow-xl">
+    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-md rounded-2xl bg-white p-3 shadow-xl sm:p-4"
+      >
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-900">Camera scan</h2>
+          <h2 id={titleId} className="text-sm font-semibold text-neutral-900">
+            Camera scan
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100"
+            className="cursor-pointer rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1"
           >
             Close
           </button>
         </div>
 
-        <div id={SCANNER_ELEMENT_ID} className="min-h-44 rounded-lg bg-neutral-100" />
+        <div id={SCANNER_ELEMENT_ID} className="min-h-40 rounded-lg bg-neutral-100 sm:min-h-44" />
 
         {cameraError ? (
           <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">

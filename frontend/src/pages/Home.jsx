@@ -159,19 +159,25 @@ export default function Home() {
   return (
     <AppShell title="Product catalog" subtitle="Scan and purchase flow">
       <section className="rounded-xl border border-neutral-200 bg-white p-4">
-        <h2 className="text-sm font-medium text-neutral-800">Upload barcode image (desktop default)</h2>
+        <h2 id="upload-section-title" className="text-sm font-medium text-neutral-800">
+          Upload barcode image (desktop default)
+        </h2>
         <p className="mt-1 text-xs text-neutral-600">
           Choose a barcode image to scan. This is the recommended path on laptops/desktops.
         </p>
+        <label htmlFor="barcode-image-upload" className="sr-only">
+          Upload barcode image file
+        </label>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isBusy}
-          className="mt-3 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-3 w-full cursor-pointer rounded-xl border border-neutral-300 px-4 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isFileDecoding ? 'Decoding image...' : 'Upload image'}
         </button>
         <input
+          id="barcode-image-upload"
           ref={fileInputRef}
           type="file"
           accept="image/*"
@@ -191,7 +197,7 @@ export default function Home() {
           type="button"
           onClick={() => setIsScanModalOpen(true)}
           disabled={isBusy}
-          className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full cursor-pointer rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Start camera scan
         </button>
@@ -202,20 +208,26 @@ export default function Home() {
       )}
 
       <div className="rounded-xl border border-neutral-200 bg-white p-4">
-        <p className="text-sm font-medium text-neutral-800">Manual entry</p>
-        <div className="mt-3 flex gap-2">
+        <p id="manual-entry-title" className="text-sm font-medium text-neutral-800">
+          Manual entry
+        </p>
+        <label htmlFor="manual-barcode-input" className="mt-3 block text-xs font-medium text-neutral-700">
+          Barcode
+        </label>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <input
+            id="manual-barcode-input"
             type="text"
             placeholder="Enter barcode"
             value={manualCode}
             onChange={(event) => setManualCode(event.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1"
           />
           <button
             type="button"
             disabled={isBusy}
             onClick={handleManualLookup}
-            className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100"
+            className="w-full cursor-pointer rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             {isLookingUp ? 'Looking up...' : 'Lookup'}
           </button>
@@ -242,7 +254,7 @@ export default function Home() {
             type="button"
             onClick={handlePayment}
             disabled={isBusy || !hasStock}
-            className="mt-4 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-4 w-full cursor-pointer rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPaying ? 'Processing payment...' : isAddingToCatalog ? 'Adding to catalog...' : 'Pay now'}
           </button>
@@ -264,7 +276,7 @@ export default function Home() {
               <p>{catalogSuccessMessage}</p>
               <Link
                 to="/catalog"
-                className="inline-flex rounded-lg border border-emerald-500 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                className="inline-flex cursor-pointer rounded-lg border border-emerald-500 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1"
               >
                 Go to Catalog
               </Link>

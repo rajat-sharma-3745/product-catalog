@@ -15,6 +15,9 @@ app.use(
 );
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({ ok: true });
+})
 app.use('/api', apiRoutes);
 
 app.use(errorHandler);
